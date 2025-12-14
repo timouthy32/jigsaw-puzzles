@@ -8,7 +8,9 @@ let gameState = {
     placedPieces: [],
     startTime: null,
     timerInterval: null,
-    pieceSize: 100
+    pieceSize: 100,
+    canvas: null,
+    ctx: null
 };
 
 // DOM Elements
@@ -141,23 +143,50 @@ function createPuzzleBoard() {
     totalPieces.textContent = gameState.pieceCount;
 }
 
-// Create Puzzle Pieces
-function createPuzzlePieces() {
-    piecesList.innerHTML = '';
+// Create individual piece image using canvas
+function createPieceImage(row, col) {
+    const canvas = document.createElement('canvas');
+    const sidebarPieceSize = 80; // Size of pieces in sidebar
+    canvas.width = sidebarPieceSize;
+    canvas.height = sidebarPieceSize;
+    const ctx = canvas.getContext('2d');
     
     const pieceWidth = gameState.image.width / gameState.gridSize;
     const pieceHeight = gameState.image.height / gameState.gridSize;
+    
+    // Draw the specific piece from the image
+    ctx.drawImage(
+        gameState.image,
+        col * pieceWidth, // source x
+        row * pieceHeight, // source y
+        pieceWidth, // source width
+        pieceHeight, // source height
+        0, // destination x
+        0, // destination y
+        sidebarPieceSize, // destination width
+        sidebarPieceSize // destination height
+    );
+    
+    return canvas.toDataURL();
+}
+
+// Create Puzzle Pieces
+function createPuzzlePieces() {
+    piecesList.innerHTML = '';
     
     // Create pieces array with position info
     for (let i = 0; i < gameState.pieceCount; i++) {
         const row = Math.floor(i / gameState.gridSize);
         const col = i % gameState.gridSize;
         
+        const pieceImageUrl = createPieceImage(row, col);
+        
         gameState.pieces.push({
             index: i,
             correctPosition: i,
-            backgroundPosition: `-${col * pieceWidth}px -${row * pieceHeight}px`,
-            backgroundSize: `${gameState.image.width}px ${gameState.image.height}px`,
+            pieceImageUrl: pieceImageUrl,
+            row: row,
+            col: col,
             // Store scaled values for board placement
             scaledBackgroundPosition: `-${col * gameState.pieceSize}px -${row * gameState.pieceSize}px`,
             scaledBackgroundSize: `${gameState.pieceSize * gameState.gridSize}px ${gameState.pieceSize * gameState.gridSize}px`
@@ -175,9 +204,10 @@ function createPuzzlePieces() {
         pieceElement.dataset.correctPosition = piece.correctPosition;
         pieceElement.dataset.displayIndex = displayIndex;
         
-        pieceElement.style.backgroundImage = `url(${gameState.imageDataUrl})`;
-        pieceElement.style.backgroundPosition = piece.backgroundPosition;
-        pieceElement.style.backgroundSize = piece.backgroundSize;
+        // Use the canvas-generated image for sidebar display
+        pieceElement.style.backgroundImage = `url(${piece.pieceImageUrl})`;
+        pieceElement.style.backgroundSize = 'cover';
+        pieceElement.style.backgroundPosition = 'center';
         
         pieceElement.addEventListener('dragstart', handleDragStart);
         pieceElement.addEventListener('dragend', handleDragEnd);
@@ -318,9 +348,6 @@ function loadGame() {
 function restorePuzzleState() {
     piecesList.innerHTML = '';
     
-    const pieceWidth = gameState.image.width / gameState.gridSize;
-    const pieceHeight = gameState.image.height / gameState.gridSize;
-    
     // Restore placed pieces with scaled dimensions
     gameState.placedPieces.forEach((correctPos, slotIndex) => {
         if (correctPos !== null) {
@@ -348,9 +375,10 @@ function restorePuzzleState() {
             pieceElement.dataset.correctPosition = piece.correctPosition;
             pieceElement.dataset.displayIndex = displayIndex;
             
-            pieceElement.style.backgroundImage = `url(${gameState.imageDataUrl})`;
-            pieceElement.style.backgroundPosition = piece.backgroundPosition;
-            pieceElement.style.backgroundSize = piece.backgroundSize;
+            // Use the saved piece image
+            pieceElement.style.backgroundImage = `url(${piece.pieceImageUrl})`;
+            pieceElement.style.backgroundSize = 'cover';
+            pieceElement.style.backgroundPosition = 'center';
             
             pieceElement.addEventListener('dragstart', handleDragStart);
             pieceElement.addEventListener('dragend', handleDragEnd);
@@ -379,7 +407,9 @@ function resetGameState() {
         placedPieces: [],
         startTime: null,
         timerInterval: null,
-        pieceSize: 100
+        pieceSize: 100,
+        canvas: null,
+        ctx: null
     };
     imagePreview.innerHTML = '';
     imageUpload.value = '';
