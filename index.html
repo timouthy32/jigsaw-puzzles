@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Puzzle Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Jigsaw Puzzle Game</h1>
+        
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="screen active">
+            <div class="setup-container">
+                <h2>Setup Your Puzzle</h2>
+                
+                <div class="form-group">
+                    <label for="imageUpload">Choose an Image:</label>
+                    <input type="file" id="imageUpload" accept="image/*" required>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pieceCount">Number of Pieces:</label>
+                    <select id="pieceCount">
+                        <option value="9">9 pieces (3x3)</option>
+                        <option value="16" selected>16 pieces (4x4)</option>
+                        <option value="25">25 pieces (5x5)</option>
+                        <option value="36">36 pieces (6x6)</option>
+                        <option value="49">49 pieces (7x7)</option>
+                    </select>
+                </div>
+                
+                <button id="startButton" class="btn btn-primary" disabled>Start Puzzle</button>
+                <button id="loadButton" class="btn btn-secondary" style="display:none;">Continue Saved Game</button>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="game-info">
+                    <span>Pieces: <span id="piecesPlaced">0</span> / <span id="totalPieces">0</span></span>
+                    <span>Time: <span id="timer">00:00</span></span>
+                </div>
+                <div class="game-actions">
+                    <button id="saveButton" class="btn btn-save">Save Progress</button>
+                    <button id="resetButton" class="btn btn-reset">New Puzzle</button>
+                </div>
+            </div>
+            
+            <div class="game-container">
+                <div id="puzzleBoard" class="puzzle-board"></div>
+                <div id="piecesContainer" class="pieces-container">
+                    <h3>Available Pieces</h3>
+                    <div id="piecesList" class="pieces-list"></div>
+                </div>
+            </div>
+            
+            <div id="victoryMessage" class="victory-message" style="display:none;">
+                <div class="victory-content">
+                    <h2>🎉 Congratulations! 🎉</h2>
+                    <p>You completed the puzzle!</p>
+                    <p>Time: <span id="finalTime"></span></p>
+                    <button id="newGameButton" class="btn btn-primary">Start New Puzzle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
