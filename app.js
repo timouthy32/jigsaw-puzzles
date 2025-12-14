@@ -157,7 +157,10 @@ function createPuzzlePieces() {
             index: i,
             correctPosition: i,
             backgroundPosition: `-${col * pieceWidth}px -${row * pieceHeight}px`,
-            backgroundSize: `${gameState.image.width}px ${gameState.image.height}px`
+            backgroundSize: `${gameState.image.width}px ${gameState.image.height}px`,
+            // Store scaled values for board placement
+            scaledBackgroundPosition: `-${col * gameState.pieceSize}px -${row * gameState.pieceSize}px`,
+            scaledBackgroundSize: `${gameState.pieceSize * gameState.gridSize}px ${gameState.pieceSize * gameState.gridSize}px`
         });
     }
     
@@ -217,19 +220,20 @@ function handleDrop(e) {
     
     // Check if correct position
     if (correctPosition === slotIndex && !gameState.placedPieces[slotIndex]) {
-        const draggedPiece = document.querySelector(`[data-correct-position="${correctPosition}"]`);
+        const pieceData = gameState.pieces.find(p => p.correctPosition === correctPosition);
         
-        // Create piece for board
+        // Create piece for board with scaled dimensions
         const boardPiece = document.createElement('div');
         boardPiece.className = 'puzzle-piece';
         boardPiece.style.backgroundImage = `url(${gameState.imageDataUrl})`;
-        boardPiece.style.backgroundPosition = draggedPiece.style.backgroundPosition;
-        boardPiece.style.backgroundSize = draggedPiece.style.backgroundSize;
+        boardPiece.style.backgroundPosition = pieceData.scaledBackgroundPosition;
+        boardPiece.style.backgroundSize = pieceData.scaledBackgroundSize;
         
         slot.appendChild(boardPiece);
         slot.classList.add('filled');
         
         // Mark piece as placed
+        const draggedPiece = document.querySelector(`[data-correct-position="${correctPosition}"]`);
         draggedPiece.classList.add('placed');
         gameState.placedPieces[slotIndex] = correctPosition;
         
@@ -276,7 +280,8 @@ function saveGame() {
         pieces: gameState.pieces,
         placedPieces: gameState.placedPieces,
         startTime: gameState.startTime,
-        elapsedTime: Date.now() - gameState.startTime
+        elapsedTime: Date.now() - gameState.startTime,
+        pieceSize: gameState.pieceSize
     };
     localStorage.setItem('jigsawPuzzleGame', JSON.stringify(saveData));
 }
@@ -292,6 +297,7 @@ function loadGame() {
     gameState.pieces = savedData.pieces;
     gameState.placedPieces = savedData.placedPieces;
     gameState.startTime = Date.now() - savedData.elapsedTime;
+    gameState.pieceSize = savedData.pieceSize || 100;
     
     // Load image
     const img = new Image();
@@ -315,7 +321,7 @@ function restorePuzzleState() {
     const pieceWidth = gameState.image.width / gameState.gridSize;
     const pieceHeight = gameState.image.height / gameState.gridSize;
     
-    // Restore placed pieces
+    // Restore placed pieces with scaled dimensions
     gameState.placedPieces.forEach((correctPos, slotIndex) => {
         if (correctPos !== null) {
             const slot = puzzleBoard.children[slotIndex];
@@ -325,8 +331,8 @@ function restorePuzzleState() {
             const boardPiece = document.createElement('div');
             boardPiece.className = 'puzzle-piece';
             boardPiece.style.backgroundImage = `url(${gameState.imageDataUrl})`;
-            boardPiece.style.backgroundPosition = `-${col * pieceWidth}px -${row * pieceHeight}px`;
-            boardPiece.style.backgroundSize = `${gameState.image.width}px ${gameState.image.height}px`;
+            boardPiece.style.backgroundPosition = `-${col * gameState.pieceSize}px -${row * gameState.pieceSize}px`;
+            boardPiece.style.backgroundSize = `${gameState.pieceSize * gameState.gridSize}px ${gameState.pieceSize * gameState.gridSize}px`;
             
             slot.appendChild(boardPiece);
             slot.classList.add('filled');
